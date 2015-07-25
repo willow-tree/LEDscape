@@ -4,7 +4,7 @@
   "name": "Willow Tree Mapping V1",
   "description": "Willow Tree Mapping V1",
   "cape-support": [
-    { "org": "willow-tree", "id": "RJ45CapeC2" }
+    { "org": "willow-tree", "id": "WillowTreeV1" }
   ],
   "mappedPinNumberToPinDesignator": {
     // Module 1
@@ -62,6 +62,16 @@
     "38": "P9_14", // S44
     "39": "P9_13", // S45
     "40": "P9_16", // S42
+
+    // Unused pins
+    "41": "P8_8", // S0
+    "42": "P8_10", // S1
+    "43": "P8_12", // S2
+    "44": "P8_14", // S3
+    "45": "P8_16", // S4
+    "46": "P8_13", // S29
+    "47": "P8_9", // S30
+    "48": "P8_7", // S31
 
     "clock0": "P8_27",
     "clock1": "P8_11"
