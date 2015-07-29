@@ -143,6 +143,7 @@ l_word_loop:
 
 		// Clock LOW
 		CLOCK_LOW()
+		SLEEPNS 3600, 1, wait_clock_low		
 
 		// set all data LOW
 		PREP_GPIO_ADDRS_FOR_CLEAR()
@@ -155,16 +156,13 @@ l_word_loop:
 
 		// Clock HIGH
 		CLOCK_HIGH()
+		SLEEPNS 3600, 1, wait_clock_high
 
 		// Bits sent
 		///////////////////////////////////////////////////////////////////////
 
 		QBNE l_bit_loop, r_bit_num, #0
 	//end l_bit_loop
-
-	#else
-	#warning No clock pin defined for this mapping
-	#endif
 
 	// The RGB streams have been clocked out
 	// Move to the next pixel on each row
@@ -177,7 +175,12 @@ l_word_loop:
 	PREP_GPIO_ADDRS_FOR_CLEAR()
 
 	WAITNS 1200, end_of_frame_clear_wait
+	CLOCK_LOW()
 	GPIO_APPLY_MASK_TO_ADDR()
+
+	#else
+	#warning No clock pin defined for this mapping
+	#endif
 
 	// Delay at least 500 usec; this is the required reset
 	// time for the LED strip to update with the new pixels.
