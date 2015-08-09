@@ -19,13 +19,22 @@
 
 #include "common.p.h"
 
-#define CLOCK_HIGH() MOV r_gpio0_addr, CONCAT3(pin_clock, PRU_NUM, _gpio) | GPIO_SETDATAOUT; \
-                     MOV r_gpio0_mask, CONCAT3(pin_clock, PRU_NUM, _mask); \
+#define CLOCK0_HIGH() MOV r_gpio0_addr, CONCAT3(pin_clock, 0, _gpio) | GPIO_SETDATAOUT; \
+                     MOV r_gpio0_mask, CONCAT3(pin_clock, 0, _mask); \
                      SBBO r_gpio0_mask, r_gpio0_addr, 0, 4;
 
-#define CLOCK_LOW() MOV r_gpio0_addr, CONCAT3(pin_clock, PRU_NUM, _gpio) | GPIO_CLEARDATAOUT; \
-                    MOV r_gpio0_mask, CONCAT3(pin_clock, PRU_NUM, _mask); \
+#define CLOCK0_LOW() MOV r_gpio0_addr, CONCAT3(pin_clock, 0, _gpio) | GPIO_CLEARDATAOUT; \
+                    MOV r_gpio0_mask, CONCAT3(pin_clock, 0, _mask); \
                     SBBO r_gpio0_mask, r_gpio0_addr, 0, 4;
+
+#define CLOCK1_HIGH() MOV r_gpio0_addr, CONCAT3(pin_clock, 1, _gpio) | GPIO_SETDATAOUT; \
+                     MOV r_gpio0_mask, CONCAT3(pin_clock, 1, _mask); \
+                     SBBO r_gpio0_mask, r_gpio0_addr, 0, 4;
+
+#define CLOCK1_LOW() MOV r_gpio0_addr, CONCAT3(pin_clock, 1, _gpio) | GPIO_CLEARDATAOUT; \
+                    MOV r_gpio0_mask, CONCAT3(pin_clock, 1, _mask); \
+                    SBBO r_gpio0_mask, r_gpio0_addr, 0, 4;
+
 
 START:
 	// Enable OCP master port
@@ -87,6 +96,9 @@ _LOOP:
 	QBEQ EXIT, r2, #0xFF
 
 
+	// NOP on PRU1
+	#if PRU_NUM == 0
+
 l_word_loop:
 
 	#if CONCAT3(pin_clock, PRU_NUM, _exists) == 1
@@ -104,7 +116,7 @@ l_word_loop:
 		// Load data and test bits
 
 		// First 16 channels
-		LOAD_CHANNEL_DATA(24, 0, 16)
+		LOAD_CHANNEL_DATA(48, 0, 16)
 
 		// Test for ones
 		TEST_BIT_ONE(r_data0,  0)
@@ -124,8 +136,8 @@ l_word_loop:
 		TEST_BIT_ONE(r_data14, 14)
 		TEST_BIT_ONE(r_data15, 15)
 
-		// Last 8 channels
-		LOAD_CHANNEL_DATA(24, 16, 8)
+		// Next 16 channels
+		LOAD_CHANNEL_DATA(48, 16, 16)
 		TEST_BIT_ONE(r_data0, 16)
 		TEST_BIT_ONE(r_data1, 17)
 		TEST_BIT_ONE(r_data2, 18)
@@ -134,6 +146,25 @@ l_word_loop:
 		TEST_BIT_ONE(r_data5, 21)
 		TEST_BIT_ONE(r_data6, 22)
 		TEST_BIT_ONE(r_data7, 23)
+		TEST_BIT_ONE(r_data8, 24)
+		TEST_BIT_ONE(r_data9, 25)
+		TEST_BIT_ONE(r_data10, 26)
+		TEST_BIT_ONE(r_data11, 27)
+		TEST_BIT_ONE(r_data12, 28)
+		TEST_BIT_ONE(r_data13, 29)
+		TEST_BIT_ONE(r_data14, 30)
+		TEST_BIT_ONE(r_data15, 31)
+		
+		// Last 8 channels
+		LOAD_CHANNEL_DATA(48, 32, 8)
+		TEST_BIT_ONE(r_data0, 32)
+		TEST_BIT_ONE(r_data1, 33)
+		TEST_BIT_ONE(r_data2, 34)
+		TEST_BIT_ONE(r_data3, 35)
+		TEST_BIT_ONE(r_data4, 36)
+		TEST_BIT_ONE(r_data5, 37)
+		TEST_BIT_ONE(r_data6, 38)
+		TEST_BIT_ONE(r_data7, 39)
 
 		// Data loaded
 		///////////////////////////////////////////////////////////////////////
@@ -142,7 +173,8 @@ l_word_loop:
 		// Send the bits
 
 		// Clock LOW
-		CLOCK_LOW()
+		CLOCK0_LOW()
+		CLOCK1_LOW()
 		SLEEPNS 3600, 1, wait_clock_low		
 
 		// set all data LOW
@@ -155,7 +187,8 @@ l_word_loop:
 		GPIO_APPLY_ONES_TO_ADDR()
 
 		// Clock HIGH
-		CLOCK_HIGH()
+		CLOCK0_HIGH()
+		CLOCK1_HIGH()
 		SLEEPNS 3600, 1, wait_clock_high
 
 		// Bits sent
@@ -175,7 +208,8 @@ l_word_loop:
 	PREP_GPIO_ADDRS_FOR_CLEAR()
 
 	WAITNS 1200, end_of_frame_clear_wait
-	CLOCK_LOW()
+	CLOCK0_LOW()
+	CLOCK1_LOW()
 	GPIO_APPLY_MASK_TO_ADDR()
 
 	#else
@@ -185,6 +219,8 @@ l_word_loop:
 	// Delay at least 500 usec; this is the required reset
 	// time for the LED strip to update with the new pixels.
 	SLEEPNS 1000000, 1, reset_time
+
+	#endif // NOP if not PRU0
 
 	// Write out that we are done!
 	// Store a non-zero response in the buffer so that they know that we are done

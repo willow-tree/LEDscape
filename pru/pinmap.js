@@ -388,7 +388,7 @@ var Commands = {
 		console.info(slashLine);
 
 		console.info("// PRU0 Mappings");
-		console.info(buildRangeHeader("pru0_", function(pin){ return pin.mappedChannelIndex < 24; }));
+		console.info(buildRangeHeader("pru0_", function(pin){ return pin.mappedChannelIndex < 48; }));
 		console.info(slashLine);
 		console.info("\n\n");
 		console.info(slashLine);
